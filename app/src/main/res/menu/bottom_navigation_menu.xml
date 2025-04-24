@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_dashboard"
+        android:icon="@drawable/ic_dashboard"
+        android:title="Dashboard" />
+
+    <item
+        android:id="@+id/navigation_electricity"
+        android:icon="@drawable/ic_electricity"
+        android:title="Electricity" />
+
+    <item
+        android:id="@+id/navigation_water"
+        android:icon="@drawable/ic_water"
+        android:title="Water" />
+
+    <item
+        android:id="@+id/navigation_gas"
+        android:icon="@drawable/ic_gas"
+        android:title="Gas" />
+</menu> 
