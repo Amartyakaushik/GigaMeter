@@ -6,25 +6,28 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.example.gigameter.R
+import com.example.gigameter.databinding.FragmentElectricityBinding
+import com.example.gigameter.models.UtilityData
+import com.example.gigameter.repository.UtilityRepository
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
-import java.util.ArrayList // Use Java's ArrayList for MPAndroidChart Entries
+import kotlinx.coroutines.launch
 import java.util.Locale
-import java.util.Date // Needed if using Date, otherwise remove
 import kotlin.random.Random
 
 class ElectricityFragment : Fragment() {
-
-    private lateinit var currentUsageTextView: TextView
-    private lateinit var currentTimeTextView: TextView
-    private lateinit var averageUsageTextView: TextView
-    private lateinit var usageChart: LineChart
+    private var _binding: FragmentElectricityBinding? = null
+    private val binding get() = _binding!!
+    private val repository = UtilityRepository()
 
     private val usageUnit: String = "kWh"
     private val daysToShow = 7
@@ -33,51 +36,91 @@ class ElectricityFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_electricity, container, false)
-        initializeViews(view)
-        setupChart()
-        return view
+    ): View {
+        _binding = FragmentElectricityBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        loadDummyData()
-    }
-
-    private fun initializeViews(view: View) {
-        currentUsageTextView = view.findViewById(R.id.currentUsage)
-        currentTimeTextView = view.findViewById(R.id.currentTime)
-        averageUsageTextView = view.findViewById(R.id.averageUsage)
-        usageChart = view.findViewById(R.id.usageChart)
+        setupChart()
+        loadData()
     }
 
     private fun setupChart() {
-        usageChart.description.isEnabled = false
-        usageChart.setTouchEnabled(true)
-        usageChart.isDragEnabled = true
-        usageChart.setScaleEnabled(true)
-        usageChart.setPinchZoom(true)
-        usageChart.legend.isEnabled = false
+        binding.chart.apply {
+            description.isEnabled = false
+            setTouchEnabled(true)
+            isDragEnabled = true
+            setScaleEnabled(true)
+            setPinchZoom(true)
+            axisRight.isEnabled = false
+            xAxis.setDrawGridLines(false)
+            // Clear default text
+            setNoDataText("")
+        }
+    }
 
-        val xAxis = usageChart.xAxis
-        xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.setDrawGridLines(false)
-        xAxis.granularity = 1f
-        xAxis.labelCount = daysToShow
-        xAxis.valueFormatter = object : ValueFormatter() {
-            override fun getFormattedValue(value: Float): String {
-                // Display Day number (1-based index)
-                return "Day ${value.toInt() + 1}"
+    private fun loadData() {
+        // Show progress bar, hide chart and empty text initially
+        binding.progressBar.isVisible = true
+        binding.chart.isVisible = false
+        binding.emptyChartText.isVisible = false
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val utilityData = repository.getUtilityData("electricity")
+                updateUI(utilityData)
+            } catch (e: Exception) {
+                binding.progressBar.isVisible = false // Hide progress bar on error
+                binding.emptyChartText.isVisible = true // Optionally show empty text on error
+                binding.emptyChartText.text = "Error loading data."
+                Toast.makeText(context, "Error loading data: ${e.message}", Toast.LENGTH_SHORT).show()
+            } finally {
+                 // Ensure progress bar is hidden after loading attempt (success or failure)
+                 binding.progressBar.isVisible = false
             }
         }
+    }
 
-        usageChart.axisRight.isEnabled = false
-        usageChart.axisLeft.setDrawGridLines(true)
-        usageChart.axisLeft.axisMinimum = 0f // Start Y-axis at 0
+    private fun updateUI(utilityData: UtilityData) {
+        // Update daily limit
+        binding.dailyLimitText.text = "Daily Limit: ${utilityData.dailyLimit} kWh"
 
-        usageChart.data = LineData() // Initialize with empty data
-        usageChart.invalidate()
+        // Update current usage
+        val currentUsage = utilityData.usageHistory.lastOrNull() ?: 0
+        binding.currentUsageText.text = "Current Usage: $currentUsage kWh"
+
+        // Update chart visibility and content
+        if (utilityData.usageHistory.isEmpty()) {
+            binding.chart.isVisible = false
+            binding.emptyChartText.isVisible = true
+            binding.emptyChartText.text = "No usage history recorded yet."
+            binding.chart.clear() // Clear any potential old data
+        } else {
+            binding.chart.isVisible = true
+            binding.emptyChartText.isVisible = false
+
+            val entries = utilityData.usageHistory.mapIndexed { index, value ->
+                Entry(index.toFloat(), value.toFloat())
+            }
+
+            val dataSet = LineDataSet(entries, "Electricity Usage (kWh)").apply {
+                color = Color.BLUE
+                valueTextColor = Color.BLACK
+                lineWidth = 2f
+                setDrawCircles(true)
+                setDrawValues(true)
+            }
+
+            binding.chart.data = LineData(dataSet)
+            binding.chart.invalidate()
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun getLineColor(): Int {
@@ -97,26 +140,33 @@ class ElectricityFragment : Fragment() {
     private fun loadDummyData() {
         val dummyEntries = createDummyData()
 
-        if (dummyEntries.isEmpty()) return
+        if (dummyEntries.isEmpty()) {
+            binding.chart.isVisible = false
+            binding.emptyChartText.isVisible = true
+            binding.emptyChartText.text = "No dummy data available."
+            return
+        }
+
+        binding.chart.isVisible = true
+        binding.emptyChartText.isVisible = false
 
         val dataSet = LineDataSet(dummyEntries, "Daily Electricity Usage")
         setupDataSetStyle(dataSet)
 
         val lineData = LineData(dataSet)
-        usageChart.data = lineData
-        usageChart.invalidate() // Refresh chart
+        binding.chart.data = lineData
+        binding.chart.invalidate() // Refresh chart
 
         // Update TextViews
         val latestUsage = dummyEntries.last().y
         val averageUsage = dummyEntries.map { it.y }.average().toFloat()
 
-        currentUsageTextView.text = String.format(Locale.US, "%.1f %s", latestUsage, usageUnit)
-        currentTimeTextView.text = "Last 7 Days"
-        averageUsageTextView.text = String.format(Locale.US, "%.1f %s", averageUsage, usageUnit)
-
+        binding.currentUsageText.text = String.format(Locale.US, "Current Usage: %.1f %s", latestUsage, usageUnit)
+        // This was incorrectly updating daily limit with average dummy usage, let's remove for now
+        // binding.dailyLimitText.text = String.format(Locale.US, "Daily Limit: %.1f %s", averageUsage, usageUnit)
     }
 
-     private fun setupDataSetStyle(dataSet: LineDataSet) {
+    private fun setupDataSetStyle(dataSet: LineDataSet) {
         dataSet.color = getLineColor()
         dataSet.setCircleColor(getLineColor())
         dataSet.lineWidth = 2f
@@ -129,5 +179,4 @@ class ElectricityFragment : Fragment() {
         dataSet.setDrawValues(false) // Hide values on points
         dataSet.mode = LineDataSet.Mode.CUBIC_BEZIER // Smoothed line
     }
-
 } 

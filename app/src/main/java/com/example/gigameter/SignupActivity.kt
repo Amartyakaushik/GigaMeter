@@ -96,7 +96,6 @@ class SignupActivity : AppCompatActivity() {
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
-                        // Sign up success, create user profile in Firestore
                         val user = auth.currentUser
                         val userData = hashMapOf(
                             "name" to name,
