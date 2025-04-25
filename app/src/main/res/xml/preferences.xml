@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        app:key="category_limits"
+        app:title="Usage Limits">
+
+        <EditTextPreference
+            app:key="pref_electricity_limit"
+            app:title="Electricity Daily Limit (kWh)"
+            app:summary="Set your daily electricity consumption limit"
+            app:useSimpleSummaryProvider="true"
+            android:inputType="number"
+            app:defaultValue="100" />
+
+        <EditTextPreference
+            app:key="pref_water_limit"
+            app:title="Water Daily Limit (Liters)"
+            app:summary="Set your daily water consumption limit"
+            app:useSimpleSummaryProvider="true"
+            android:inputType="number"
+            app:defaultValue="200" />
+
+        <!-- Add other utility limits here as needed -->
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="category_notifications"
+        app:title="Notifications">
+
+        <SwitchPreferenceCompat
+            app:key="pref_notifications_enabled"
+            app:title="Enable Weekly Reports"
+            app:summary="Receive a notification summarizing your weekly usage"
+            app:defaultValue="true" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen> 

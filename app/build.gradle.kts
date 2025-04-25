@@ -68,4 +68,7 @@ dependencies {
 
     // WorkManager for background tasks
     implementation(libs.androidx.work.runtime.ktx)
+
+    // Preferences for settings screen
+    implementation(libs.androidx.preference.ktx)
 }
