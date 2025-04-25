@@ -65,4 +65,7 @@ dependencies {
 
     // Firebase Firestore
     implementation("com.google.firebase:firebase-firestore-ktx")
+
+    // WorkManager for background tasks
+    implementation(libs.androidx.work.runtime.ktx)
 }
