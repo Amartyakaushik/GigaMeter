@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "763293131980",
+    "project_id": "gigameter",
+    "storage_bucket": "gigameter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:763293131980:android:dfbc617772d82da8bc8e69",
+        "android_client_info": {
+          "package_name": "com.example.gigameter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMRmwGLqMSU54-YPvWYg60P0TGcg3KSOg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

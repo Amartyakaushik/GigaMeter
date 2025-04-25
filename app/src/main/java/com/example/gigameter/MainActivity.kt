@@ -3,21 +3,30 @@ package com.example.gigameter
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.example.gigameter.databinding.ActivityMainBinding
 import com.example.gigameter.fragments.DashboardFragment
 import com.example.gigameter.fragments.ElectricityFragment
 import com.example.gigameter.fragments.GasFragment
 import com.example.gigameter.fragments.WaterFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.ktx.Firebase
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
     private lateinit var bottomNavigation: BottomNavigationView
+    private lateinit var auth: FirebaseAuth
 
     companion object {
         const val CHANNEL_ID = "GigaMeter_Usage_Alerts"
@@ -26,12 +35,25 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        // Set up action bar
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.title = "GigaMeter"
+
+        auth = FirebaseAuth.getInstance()
+
+        if (auth.currentUser == null) {
+            startActivity(Intent(this, AuthActivity::class.java))
+            finish()
+            return
+        }
 
         createNotificationChannel()
         requestNotificationPermission()
 
-        bottomNavigation = findViewById(R.id.bottomNavigation)
+        bottomNavigation = binding.bottomNavigation
         bottomNavigation.setOnItemSelectedListener { item ->
             var selectedFragment: Fragment? = null
             when (item.itemId) {
@@ -51,14 +73,35 @@ class MainActivity : AppCompatActivity() {
             if (selectedFragment != null) {
                 loadFragment(selectedFragment)
             }
-            true // Return true to display the item as the selected item
+            true
         }
 
-        // Load default fragment
         if (savedInstanceState == null) {
-            bottomNavigation.selectedItemId = R.id.navigation_dashboard // Set default selection
+            bottomNavigation.selectedItemId = R.id.navigation_dashboard
             loadFragment(DashboardFragment())
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_sign_out -> {
+                signOut()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun signOut() {
+        auth.signOut()
+        startActivity(Intent(this, AuthActivity::class.java))
+        finish()
+        Toast.makeText(this, "Signed Out", Toast.LENGTH_SHORT).show()
     }
 
     private fun createNotificationChannel() {
@@ -69,7 +112,6 @@ class MainActivity : AppCompatActivity() {
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
             }
-            // Register the channel with the system
             val notificationManager: NotificationManager =
                 getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
@@ -77,21 +119,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                // Permission is not granted, request it
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.POST_NOTIFICATIONS),
                     NOTIFICATION_PERMISSION_REQUEST_CODE
                 )
             }
-            // Else: Permission has already been granted
         }
-        // For older versions, permission is granted by default upon installation
     }
 
-    // Optional: Handle the result of the permission request
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -101,14 +139,10 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             NOTIFICATION_PERMISSION_REQUEST_CODE -> {
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    // Permission was granted
-                    // You could potentially trigger something here if needed immediately
                 } else {
-                    // Permission denied. Handle appropriately (e.g., show a message)
                 }
                 return
             }
-            // Handle other permission results if needed
         }
     }
 
