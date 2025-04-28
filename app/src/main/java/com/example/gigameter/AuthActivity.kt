@@ -29,6 +29,7 @@ class AuthActivity : AppCompatActivity() {
             // Check if user is already logged in
             if (auth.currentUser != null) {
                 navigateToMain()
+                return // Skip rest of onCreate if already logged in
             }
 
             binding.loginButton.setOnClickListener {
