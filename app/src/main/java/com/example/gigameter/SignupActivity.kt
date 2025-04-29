@@ -64,15 +64,35 @@ class SignupActivity : AppCompatActivity() {
         if (email.isEmpty()) {
             binding.emailInputLayout.error = "Email is required"
             isValid = false
+        } else if ( !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() ){
+            binding.emailInputLayout.error = "Invalid email format"
+            isValid = false
         } else {
             binding.emailInputLayout.error = null
         }
 
-        if (password.isEmpty()) {
-            binding.passwordInputLayout.error = "Password is required"
-            isValid = false
-        } else if (password.length < 6) {
-            binding.passwordInputLayout.error = "Password must be at least 6 characters"
+        val validatePassword: (String) -> String? = { pwd ->
+            val digitRegex = ".*[0-9].*".toRegex()
+            val lowercaseRegex = ".*[a-z].*".toRegex()
+            val uppercaseRegex = ".*[A-Z].*".toRegex()
+            val specialCharRegex = ".*[@#$%^&+=].*".toRegex()
+            val noWhitespaceRegex = "\\S+".toRegex()
+            val minLength = 6
+
+            when {
+                pwd.isEmpty() -> "Password is required"
+                pwd.length < minLength -> "Password must be at least $minLength characters"
+                !pwd.matches(digitRegex) -> "Password must contain at least one digit"
+                !pwd.matches(lowercaseRegex) -> "Password must contain at least one lowercase letter"
+                !pwd.matches(uppercaseRegex) -> "Password must contain at least one uppercase letter"
+                !pwd.matches(specialCharRegex) -> "Password must contain at least one special character"
+                !pwd.matches(noWhitespaceRegex) -> "Password must not contain whitespace"
+                else -> "NO ERROR"
+            }
+        }
+        val passwordError = validatePassword(password)
+        if(passwordError != "NO ERROR") {
+            binding.passwordInputLayout.error = passwordError
             isValid = false
         } else {
             binding.passwordInputLayout.error = null
