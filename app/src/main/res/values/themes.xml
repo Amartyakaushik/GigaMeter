@@ -29,11 +29,9 @@
         <item name="colorSurfaceInverse">@color/md_theme_light_inverseSurface</item>
         <item name="colorPrimaryInverse">@color/md_theme_light_inversePrimary</item>
 
-        <!-- Add other theme customizations here -->
     </style>
 
     <style name="Theme.GigaMeter" parent="Base.Theme.GigaMeter" />
 
-    <!-- Removed Splash Screen Theme -->
 
 </resources>
