@@ -57,18 +57,13 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
-    // Firebase BOM (Bill of Materials) - Recommended way to manage versions
     implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
 
-    // Firebase Authentication
     implementation("com.google.firebase:firebase-auth-ktx")
 
-    // Firebase Firestore
     implementation("com.google.firebase:firebase-firestore-ktx")
 
-    // WorkManager for background tasks
     implementation(libs.androidx.work.runtime.ktx)
 
-    // Preferences for settings screen
     implementation(libs.androidx.preference.ktx)
 }

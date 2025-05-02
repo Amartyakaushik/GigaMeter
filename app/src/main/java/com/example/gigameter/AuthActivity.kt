@@ -22,14 +22,12 @@ class AuthActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         try {
-            // Initialize Firebase Auth
             FirebaseApp.initializeApp(this)
             auth = FirebaseAuth.getInstance()
 
-            // Check if user is already logged in
             if (auth.currentUser != null) {
                 navigateToMain()
-                return // Skip rest of onCreate if already logged in
+                return
             }
 
             binding.loginButton.setOnClickListener {
@@ -59,11 +57,9 @@ class AuthActivity : AppCompatActivity() {
                 .addOnCompleteListener(this) { task ->
                     setLoading(false)
                     if (task.isSuccessful) {
-                        // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "signInWithEmail:success")
                         navigateToMain()
                     } else {
-                        // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithEmail:failure", task.exception)
                         val errorMessage = when (task.exception?.message) {
                             "The password is invalid or the user does not have a password." -> "Invalid email or password"
@@ -92,7 +88,7 @@ class AuthActivity : AppCompatActivity() {
     private fun navigateToMain() {
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
-        finish() // Close AuthActivity so user can't go back to it
+        finish()
     }
 
     private fun setLoading(isLoading: Boolean) {
