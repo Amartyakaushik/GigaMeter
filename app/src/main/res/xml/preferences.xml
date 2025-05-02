@@ -26,16 +26,16 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory
-        app:key="category_notifications"
-        app:title="Notifications">
+<!--    <PreferenceCategory-->
+<!--        app:key="category_notifications"-->
+<!--        app:title="Notifications">-->
 
-        <SwitchPreferenceCompat
-            app:key="pref_notifications_enabled"
-            app:title="Enable Weekly Reports"
-            app:summary="Receive a notification summarizing your weekly usage"
-            app:defaultValue="true" />
+<!--        <SwitchPreferenceCompat-->
+<!--            app:key="pref_notifications_enabled"-->
+<!--            app:title="Enable Weekly Reports"-->
+<!--            app:summary="Receive a notification summarizing your weekly usage"-->
+<!--            app:defaultValue="true" />-->
 
-    </PreferenceCategory>
+<!--    </PreferenceCategory>-->
 
 </PreferenceScreen> 

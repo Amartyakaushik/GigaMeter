@@ -17,7 +17,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     companion object {
         const val KEY_ELECTRICITY_LIMIT = "pref_electricity_limit"
         const val KEY_WATER_LIMIT = "pref_water_limit"
-        const val KEY_NOTIFICATIONS = "pref_notifications_enabled"
+//        const val KEY_NOTIFICATIONS = "pref_notifications_enabled"
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -51,7 +51,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 Toast.makeText(context, "Limit must be non-negative", Toast.LENGTH_SHORT).show()
                 false // Reject negative value
             } else {
-                // Update Firestore via repository
                 lifecycleScope.launch {
                     try {
                         repository.updateDailyLimit(utilityType, newLimit)
