@@ -22,7 +22,6 @@
             android:inputType="number"
             app:defaultValue="200" />
 
-        <!-- Add other utility limits here as needed -->
 
     </PreferenceCategory>
 
@@ -35,6 +34,24 @@
             app:title="Enable Weekly Reports"
             app:summary="Receive a notification summarizing your weekly usage"
             app:defaultValue="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Demo"
+        app:iconSpaceReserved="false">
+
+        <Preference
+            android:key="pref_populate_demo"
+            android:title="Populate Demo Data"
+            android:summary="Add sample data for demonstration"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="pref_clear_demo"
+            android:title="Clear Demo Data"
+            android:summary="Remove all sample data"
+            app:iconSpaceReserved="false" />
 
     </PreferenceCategory>
 

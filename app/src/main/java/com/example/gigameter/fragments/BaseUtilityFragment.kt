@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
+import com.example.gigameter.R
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
@@ -32,7 +33,7 @@ abstract class BaseUtilityFragment(@LayoutRes private val layoutResId: Int) : Fr
     private lateinit var updateRunnable: Runnable
     private val historicalData = ArrayList<Entry>()
     private var timeOffset = 0L
-    private val maxDataPoints = 10 // Keep track of the last 10 data points for chart and avg
+    private val maxDataPoints = 10
 
     protected abstract val usageUnit: String
     protected abstract fun generateRandomUsage(): Float
@@ -60,10 +61,10 @@ abstract class BaseUtilityFragment(@LayoutRes private val layoutResId: Int) : Fr
     }
 
     protected open fun initializeViews(view: View) {
-        currentUsageTextView = view.findViewById(com.example.gigameter.R.id.currentUsage)
-        currentTimeTextView = view.findViewById(com.example.gigameter.R.id.currentTime)
-        averageUsageTextView = view.findViewById(com.example.gigameter.R.id.averageUsage)
-        usageChart = view.findViewById(com.example.gigameter.R.id.usageChart)
+        currentUsageTextView = view.findViewById(R.id.currentUsage)
+        currentTimeTextView = view.findViewById(R.id.currentTime)
+        averageUsageTextView = view.findViewById(R.id.averageUsage)
+        usageChart = view.findViewById(R.id.usageChart)
     }
 
     private fun setupChart() {
@@ -81,14 +82,13 @@ abstract class BaseUtilityFragment(@LayoutRes private val layoutResId: Int) : Fr
         xAxis.valueFormatter = object : ValueFormatter() {
             private val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
             override fun getFormattedValue(value: Float): String {
-                // Display time relative to the start
                 return format.format(Date(System.currentTimeMillis() - (maxDataPoints - 1 - value.toLong()) * 3000))
             }
         }
 
         usageChart.axisRight.isEnabled = false
         usageChart.axisLeft.setDrawGridLines(true)
-        usageChart.axisLeft.axisMinimum = 0f // Start Y-axis at 0
+        usageChart.axisLeft.axisMinimum = 0f // Y-axis at 0
 
         val dataSet = LineDataSet(ArrayList<Entry>(), "Usage")
         setupDataSetStyle(dataSet)
@@ -109,7 +109,7 @@ abstract class BaseUtilityFragment(@LayoutRes private val layoutResId: Int) : Fr
         dataSet.fillColor = getLineColor()
         dataSet.fillAlpha = 30
         dataSet.setDrawValues(false) // Hide values on points
-        dataSet.mode = LineDataSet.Mode.CUBIC_BEZIER // Smoothed line
+        dataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
     }
 
 
@@ -124,20 +124,16 @@ abstract class BaseUtilityFragment(@LayoutRes private val layoutResId: Int) : Fr
                 data.addDataSet(set)
             }
 
-            // Add new entry
             val entry = Entry(timeOffset.toFloat(), newUsage)
             data.addEntry(entry, 0)
-            historicalData.add(entry) // Keep track for average calculation
+            historicalData.add(entry)
 
-            // Remove oldest entry if we exceed maxDataPoints
             if (set.entryCount > maxDataPoints) {
                 val oldestEntry = set.getEntryForIndex(0)
                 data.removeEntry(oldestEntry, 0)
-                // Also remove from our average tracking list
                 if (historicalData.isNotEmpty()) historicalData.removeAt(0)
             }
 
-             // Adjust x-axis values to keep the latest point at the right
             for (i in 0 until set.entryCount) {
                  set.getEntryForIndex(i).x = i.toFloat()
             }
@@ -145,8 +141,6 @@ abstract class BaseUtilityFragment(@LayoutRes private val layoutResId: Int) : Fr
 
             data.notifyDataChanged()
             usageChart.notifyDataSetChanged()
-            //usageChart.setVisibleXRangeMaximum(maxDataPoints.toFloat() -1)
-            //usageChart.moveViewToX(data.entryCount.toFloat())
             usageChart.invalidate()
             timeOffset++
         }
@@ -174,10 +168,10 @@ abstract class BaseUtilityFragment(@LayoutRes private val layoutResId: Int) : Fr
                 averageUsageTextView.text = String.format(Locale.US, "%.1f %s", avgUsage, usageUnit)
 
 
-                handler.postDelayed(this, 3000) // Update every 3 seconds
+                handler.postDelayed(this, 3000) // Update every 3s
             }
         }
-        handler.post(updateRunnable) // Start the first update
+        handler.post(updateRunnable)
     }
 
     private fun stopSimulatedUpdates() {

@@ -38,7 +38,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Set up action bar
         setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "GigaMeter"
 
@@ -90,7 +89,6 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_settings -> {
-                // Start SettingsActivity
                 startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }

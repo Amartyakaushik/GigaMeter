@@ -17,13 +17,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
     companion object {
         const val KEY_ELECTRICITY_LIMIT = "pref_electricity_limit"
         const val KEY_WATER_LIMIT = "pref_water_limit"
-        const val KEY_NOTIFICATIONS = "pref_notifications_enabled"
+        const val KEY_POPULATE_DEMO = "pref_populate_demo"
+        const val KEY_CLEAR_DEMO = "pref_clear_demo"
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
-        // Add listeners for limit changes
         findPreference<EditTextPreference>(KEY_ELECTRICITY_LIMIT)?.setOnPreferenceChangeListener {
             preference, newValue ->
             handleLimitChange("electricity", newValue)
@@ -34,38 +34,58 @@ class SettingsFragment : PreferenceFragmentCompat() {
             handleLimitChange("water", newValue)
         }
 
-        // Listener for notification toggle (handled automatically by SwitchPreferenceCompat for storage)
-        // No extra listener needed unless you want to perform an immediate action.
+        findPreference<Preference>(KEY_POPULATE_DEMO)?.setOnPreferenceClickListener {
+            lifecycleScope.launch {
+                try {
+                    repository.populateDemoData()
+                    Toast.makeText(context, "Demo data populated successfully", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Error populating demo data: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+            true
+        }
+
+        // Add demo data clearing
+        findPreference<Preference>(KEY_CLEAR_DEMO)?.setOnPreferenceClickListener {
+            lifecycleScope.launch {
+                try {
+                    repository.clearDemoData()
+                    Toast.makeText(context, "Demo data cleared successfully", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Error clearing demo data: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+            true
+        }
     }
 
     private fun handleLimitChange(utilityType: String, newValue: Any?): Boolean {
         val newLimitString = newValue as? String
         if (newLimitString.isNullOrBlank()) {
             Toast.makeText(context, "Limit cannot be empty", Toast.LENGTH_SHORT).show()
-            return false // Reject empty value
+            return false
         }
 
         return try {
             val newLimit = newLimitString.toInt()
             if (newLimit < 0) {
                 Toast.makeText(context, "Limit must be non-negative", Toast.LENGTH_SHORT).show()
-                false // Reject negative value
+                false
             } else {
-                // Update Firestore via repository
                 lifecycleScope.launch {
                     try {
                         repository.updateDailyLimit(utilityType, newLimit)
                         Toast.makeText(context, "$utilityType limit updated", Toast.LENGTH_SHORT).show()
                     } catch (e: Exception) {
                         Toast.makeText(context, "Failed to update limit: ${e.message}", Toast.LENGTH_LONG).show()
-                         // Optionally revert preference change here if needed
                     }
                 }
-                true // Accept the valid change
+                true
             }
         } catch (e: NumberFormatException) {
             Toast.makeText(context, "Invalid number format", Toast.LENGTH_SHORT).show()
-            false // Reject non-integer value
+            false
         }
     }
-} 
+}

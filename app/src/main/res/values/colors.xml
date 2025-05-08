@@ -43,6 +43,7 @@
     <color name="md_theme_dark_onSecondary">#20333E</color>
     <color name="md_theme_dark_secondaryContainer">#364955</color>
     <color name="md_theme_dark_onSecondaryContainer">#D1E5F4</color>
+    <color name="toolBar_statusBar_darkTheme">#554777</color>
     <color name="md_theme_dark_tertiary">#CAC1E9</color>
     <color name="md_theme_dark_onTertiary">#322C4C</color>
     <color name="md_theme_dark_tertiaryContainer">#494364</color>
